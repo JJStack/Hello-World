@@ -1,0 +1,470 @@
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+using namespace std;
+
+enum class WeekDay
+{
+	Mon = 1,
+	Tue,
+	Wed,
+	Thu,
+	Fri,
+	InvalidDay
+};
+
+struct Sale
+{
+	WeekDay day_of_week;
+	double amount = 0.0;
+};
+
+WeekDay get_day_from_string(string str)
+{
+	WeekDay result;
+
+	if (str == "Mon")
+	{
+		result = WeekDay::Mon;
+	}
+	else if (str == "Tue")
+	{
+		result = WeekDay::Tue;
+	}
+	else if (str == "Wed")
+	{
+		result = WeekDay::Wed;
+	}
+	else if (str == "Thu")
+	{
+		result = WeekDay::Thu;
+	}
+	else if (str == "Fri")
+	{
+		result = WeekDay::Fri;
+	}
+	else
+	{
+		result = WeekDay::InvalidDay;
+	}
+	return result;
+}
+
+string get_string_from_day(WeekDay wd)
+{
+	string result;
+
+	if (wd == WeekDay::Mon)
+	{
+		result = "Mon";
+	}
+	else if (wd == WeekDay::Tue)
+	{
+		result = "Tue";
+	}
+	else if (wd == WeekDay::Wed)
+	{
+		result = "Wed";
+	}
+	else if (wd == WeekDay::Thu)
+	{
+		result = "Thu";
+	}
+	else if (wd == WeekDay::Fri)
+	{
+		result = "Fri";
+	}
+	else
+	{
+		result = "InvalidDay";
+	}
+
+	return result;
+}
+
+WeekDay get_weekday()
+{
+	string day;
+	WeekDay wd;
+	cout << "Enter a weekday: ";
+	cin >> day;
+	wd = get_day_from_string(day);
+	while (wd == WeekDay::InvalidDay)
+	{
+		cout << "Invalid weekday, try again." << endl;
+		cout << "Enter a weekday: ";
+		cin >> day;
+		wd = get_day_from_string(day);
+	}
+	return wd;
+}
+
+void print_command_menu()
+{
+	cout << "COMMAND MENU" << endl
+		<< "view - View sales of every weekday" << endl
+		<< "edit - Edit sales of specfied day" << endl
+		<< "totals - View sales summary for the whole week" << endl
+		<< "exit - Exit program" << endl << endl;
+}
+
+void load_sales_from_file(vector<Sale>& sales)
+{
+	ifstream infile;
+	infile.open("weekly_sales.txt");
+	if (infile)
+	{
+		Sale sale;
+		string day;
+		string line;
+		while (getline(infile, line))
+		{
+			stringstream ss(line);
+			ss >> day >> sale.amount;
+			sale.day_of_week = get_day_from_string(day);
+			sales.push_back(sale);
+
+		}
+		infile.close();
+	}
+	else
+	{
+		cout << "Sales file was not found." << endl << endl;
+	}
+}
+
+void view_sales(const vector<Sale>& sales)
+{
+	cout << "Sales amount of every weekday: " << endl;
+	for (int i = 0; i < sales.size(); ++i)
+	{
+		cout << get_string_from_day(sales[i].day_of_week) << "\t" << sales[i].amount << endl;
+	}
+}
+
+void edit_sales(WeekDay day, double amount, vector<Sale>& sales)
+{
+	for (int i = 0; i < sales.size(); ++i)
+	{
+		if (sales[i].day_of_week == day)
+		{
+			sales[i].amount = amount;
+			cout << "Sales amount for " << get_string_from_day(day) << " becomes " << amount << endl;
+			break;
+		}
+	}
+	ofstream outfile;
+	outfile.open("weekly_sales.txt");
+	outfile << fixed << setprecision(2);
+	for (int i = 0; i < sales.size(); ++i)
+	{
+		outfile << get_string_from_day(sales[i].day_of_week) << "\t"
+			<< sales[i].amount << endl;
+	}
+	outfile.close();
+}
+
+void display_summary(const vector<Sale>& sales)
+{
+	double total_for_week = 0.0;
+	for (int i = 0; i < sales.size(); ++i)
+	{
+		total_for_week += sales[i].amount;
+	}
+
+	double average = total_for_week / 5;
+
+	cout << left << setw(16) << "Weekly total: " << right << setw(15) << total_for_week << endl
+		<< left << setw(16) << "Weekly average: " << right << setw(15) << average << endl;
+}
+
+void handle_command(string command, vector<Sale>& sales)
+{
+	if (command == "view")
+	{
+		view_sales(sales);
+	}
+	else if (command == "edit")
+	{
+		WeekDay wd = get_weekday();
+		double amount;
+		cout << "Sales amount: ";
+		cin >> amount;
+		edit_sales(wd, amount, sales);
+	}
+	else if (command == "totals")
+	{
+		display_summary(sales);
+	}
+	else if (command == "exist")
+	{
+		cout << "BYE" << endl;
+	}
+	else
+	{
+		cout << "Ivalid command. Try again." << endl;
+	}
+}
+
+int main()
+{
+	cout << "Weekly Sales Program. " << endl << endl;
+	print_command_menu();
+
+	vector<Sale> sales;
+	load_sales_from_file(sales);
+
+	string command;
+	do
+	{
+		cout << "Command: ";
+		cin >> command;
+
+		cout << fixed << setprecision(2);
+		handle_command(command, sales);
+		cout << endl;
+	} while (command != "exit");
+}?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+
+using namespace std;
+
+const string player_list = ("player.txt");
+
+enum class PlayerClass { Warrior, Mage, Bowman, Thief, InvalidPlayerClass };
+
+struct GamePlayer
+{
+	string name;
+	string gender;
+	PlayerClass Occupation = PlayerClass::InvalidPlayerClass;
+	unsigned int gold = 0;
+};
+
+PlayerClass get_player_class_from_string(string str)
+{
+	PlayerClass result;
+
+	if (str == "Warrior")
+	{
+		result = PlayerClass::Warrior;
+	}
+	else if (str == "Mage")
+	{
+		result = PlayerClass::Mage;
+	}
+	else if (str == "Bowman")
+	{
+		result = PlayerClass::Bowman;
+	}
+	else if (str == "Thief")
+	{
+		result = PlayerClass::Thief;
+	}
+	else
+	{
+		result = PlayerClass::InvalidPlayerClass;
+	}
+	return result;
+}
+
+string get_string_from_player_class(PlayerClass pc)
+{
+	string result;
+
+	if (pc == PlayerClass::Mage)
+	{
+		result = "Mage";
+	}
+	else if (pc == PlayerClass::Warrior)
+	{
+		result = "Warrior";
+	}
+	else if (pc == PlayerClass::Bowman)
+	{
+		result = "Bowman";
+	}
+	else if (pc == PlayerClass::Thief)
+	{
+		result = "Thief";
+	}
+	else
+	{
+		result = "InvalidPlayerClass";
+	}
+	return result;
+}
+
+void print_command_menu()
+{
+	cout << "Command Menu" << endl
+		<< "show - Display all players" << endl
+		<< "add - Add a player" << endl
+		<< "delete - Delete a player" << endl
+		<< "exit - Exit program" << endl << endl;
+}
+
+void read_file_into_vector(vector<GamePlayer>& players)
+{
+	vector<GamePlayer> player;
+	ifstream infile;
+	infile.open(player_list);
+	if (infile)
+	{
+		GamePlayer player;
+		string line;
+		string po;
+		while (getline(infile, line))
+		{
+			stringstream ss(line);
+			getline(ss, player.name, '\t');
+			ss >> player.name >> po >> player.gender >> player.gold;
+			player.Occupation = get_player_class_from_string(po);
+			players.push_back(player);
+
+		}
+		infile.close();
+	}
+	else
+	{
+		cout << "Player file not found" << endl;
+	}
+}
+
+void show_all_players(vector<GamePlayer>& players)
+{
+	cout << "Players" << endl;
+	for (int i = 0; i < players.size(); ++i)
+	{
+		cout << players[i].name << "\t" << get_string_from_player_class(players[i].Occupation) << "\t" << players[i].gender
+			<< "\t" << players[i].gold << endl;
+	}
+}
+
+PlayerClass get_player_class()
+{
+	string input;
+	PlayerClass pc;
+	cout << "Create a Mage, Warrior, Bowman, or Thief: ";
+	cin >> input;
+	pc = get_player_class_from_string(input);
+	while (pc == PlayerClass::InvalidPlayerClass)
+	{
+		cout << "Invalid class, try again" << endl
+			<< "Create a Mage, Warrior, Bowman, or Thief ";
+		cin >> input;
+		pc = get_player_class_from_string(input);
+	}
+	return pc;
+}
+
+
+void add_player(vector<GamePlayer>& players)
+{
+	GamePlayer player;
+
+
+	string name;
+	cout << "Name: ";
+	cin >> player.name;
+	cout << endl << "Sex: ";
+	cin >> player.gender;
+	cout << endl << "Gold: ";
+	cin >> player.gold;
+
+	players.push_back(player);
+	read_file_into_vector(players);
+}
+
+void write_player_to_file(const vector<GamePlayer>& players)
+{
+	ofstream outfile;
+	outfile.open("players.txt");
+	for (int i = 0; i < players.size(); ++i)
+	{
+		outfile << players[i].name << "\t " << get_string_from_player_class(players[i].Occupation) << '\t' << players[i].gender << "\t" << players[i].gold << endl;
+
+	}
+	outfile.close();
+}
+
+
+void delete_player(vector<GamePlayer>& players)
+{
+	cout << "Number: ";
+	int number;
+	cin >> number;
+	int index = number - 1;
+	GamePlayer player = players[index];
+	players.erase(players.begin() + index);
+	write_player_to_file(players);
+	cout << "Removed player character" << endl;
+}
+
+void handle_command(string command, vector<GamePlayer>& players)
+{
+	if (command == "show")
+	{
+		show_all_players(players);
+	}
+	else if (command == "add")
+	{
+		PlayerClass pc = get_player_class();
+		add_player(players);
+	}
+	else if (command == "delete")
+	{
+		delete_player(players);
+	}
+	else if (command == "exist")
+	{
+		cout << endl << "BYE" << endl;
+	}
+	else
+	{
+		cout << "Invalid command. Try again. " << endl;
+	}
+}
+
+int main()
+{
+	cout << "RPG Start Screen" << endl << endl;
+	print_command_menu();
+
+	vector<GamePlayer>players;
+	read_file_into_vector(players);
+
+	string command;
+	do
+	{
+		cout << "Command: ";
+		cin >> command;
+		cout << fixed << setprecision(2);
+		handle_command(command, players);
+		cout << endl;
+	} while (command != "exit");
+}?
